@@ -61,48 +61,46 @@ def handle_userInput(user_question):
             st.write(bot_template.replace("{{MSG}}",msg.content),unsafe_allow_html=True)
 
 def main():
-
     load_dotenv()
 
-    st.set_page_config(page_title="PDF's Chat Agent",page_icon=":scroll:")
-    st.write(css,unsafe_allow_html=True)
+    st.set_page_config(page_title="PDF's Chat Agent", page_icon=":scroll:")
+    st.write(css, unsafe_allow_html=True)
 
     if "conversation" not in st.session_state:
-        st.session_state.conversation=None
+        st.session_state.conversation = None
     if "chat_history" not in st.session_state:
-        st.session_state.chat_history=None
+        st.session_state.chat_history = None
+
     if "train" not in st.session_state:
         st.session_state.train = False
-    # GUI part
-    st.header("Multi-PDF's :books: - Chat Agent :robot_face: ")
-    
+
+    st.header("Multi-PDF's :books: - Chat Agent :robot_face:")
+
     with st.sidebar:
         st.subheader(":file_folder: PDF File's Section")
-        pdf_list=st.file_uploader("Upload your PDF files here and train agent",type=['pdf'],accept_multiple_files=True)
-        train=st.button("Train the Agent")
+        pdf_list = st.file_uploader("Upload your PDF files here and train agent", type=['pdf'], accept_multiple_files=True)
+        train = st.button("Train the Agent")
         if train:
             with st.spinner("Processing"):
-
                 # get the text from PDFs
-                raw_text=get_pdf_text(pdf_list)
-           
+                raw_text = get_pdf_text(pdf_list)
                 # get the text chunks
-                text_chunks=get_text_chunks(raw_text)
-
+                text_chunks = get_text_chunks(raw_text)
                 # create vector store
-                vector_store=get_vector_store(text_chunks)
+                vector_store = get_vector_store(text_chunks)
+                # conversation chain
+                st.session_state.conversation = get_conversation_chain(vector_store)
+                # set train to True to indicate agent has been trained
+                st.session_state.train = True
 
-                #conversation chain
-                st.session_state.conversation=get_conversation_chain(vector_store)
-
-    if not train:
+    if not st.session_state.train:
         st.warning("First Train the Agent")
-    if train:
-        st.write("<h5><br>Ask anything from your documents:</h5>", unsafe_allow_html=True)
-        user_question=st.text_input(label="",placeholder="Enter something...")
-        if user_question:
-            handle_userInput(user_question)       
-            user_question = ""
 
-if __name__=="__main__":
+    if st.session_state.train:
+        st.write("<h5><br>Ask anything from your documents:</h5>", unsafe_allow_html=True)
+        user_question = st.text_input(label="", placeholder="Enter something...")
+        if user_question:
+            handle_userInput(user_question)
+
+if __name__ == "__main__":
     main()
