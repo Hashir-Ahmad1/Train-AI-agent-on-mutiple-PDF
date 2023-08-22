@@ -32,15 +32,13 @@ def get_vector_store(text_chunks):
     if not text_chunks:
         st.warning("Please upload the textual PDF file - this is PDF files of image")
         return None
-    openai_api_key = st.secrets["OPEN_AI_APIKEY"]
-    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+    embeddings = OpenAIEmbeddings(openai_api_key=st.secrets["OPEN_AI_APIKEY"])
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
 
 def get_conversation_chain(vector_store):
-    openai_api_key = st.secrets["OPEN_AI_APIKEY"]
-    llm = ChatOpenAI(openai_api_key=openai_api_key)
+    llm = ChatOpenAI(openai_api_key=st.secrets["OPEN_AI_APIKEY"])
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm = llm,
